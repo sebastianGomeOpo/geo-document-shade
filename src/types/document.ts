@@ -12,9 +12,10 @@ export interface AreaType {
   id: string;
   name: string;
   color: string;
-  center: [number, number];
-  geometry: GeoJSONPolygon;
   documents: DocumentType[];
+  // Mantenemos estos campos para compatibilidad con StaticMap
+  center?: [number, number];
+  geometry?: GeoJSONPolygon;
 }
 
 interface GeoJSONPolygon {

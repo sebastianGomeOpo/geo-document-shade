@@ -1,57 +1,86 @@
 
 import React, { useState } from 'react';
-import { DocumentType } from '@/types/document';
+import { AreaType, DocumentType } from '@/types/document';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { FileText, MapPin, Plus, PenLine, Save, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import { useAreaStore } from '@/services/areaService';
+import DocumentViewer from '@/components/DocumentViewer';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { toast } from '@/hooks/use-toast';
 
 interface DocumentListProps {
-  documents: DocumentType[];
-  areaName: string;
+  areaId: string | null;
   isEditMode?: boolean;
-  areaId?: string | null;
 }
 
-const DocumentList: React.FC<DocumentListProps> = ({ documents: initialDocuments, areaName: initialAreaName, isEditMode, areaId }) => {
-  const [documents, setDocuments] = useState(initialDocuments);
-  const [areaName, setAreaName] = useState(initialAreaName);
+const DocumentList: React.FC<DocumentListProps> = ({ areaId, isEditMode }) => {
+  const { areas, updateAreaName, addDocument, updateDocument, deleteDocument } = useAreaStore();
+  const selectedArea = areaId ? areas.find(area => area.id === areaId) : null;
+  
   const [isEditingName, setIsEditingName] = useState(false);
+  const [areaName, setAreaName] = useState(selectedArea?.name || '');
   const [editingDoc, setEditingDoc] = useState<string | null>(null);
   const [newDoc, setNewDoc] = useState<Partial<DocumentType> | null>(null);
+  const [viewingDoc, setViewingDoc] = useState<DocumentType | null>(null);
+
+  if (!selectedArea) return null;
 
   const handleSaveAreaName = () => {
-    setIsEditingName(false);
-    // Aquí se implementaría la lógica para guardar el nombre en el backend
+    if (areaId && areaName.trim()) {
+      updateAreaName(areaId, areaName);
+      setIsEditingName(false);
+      toast({
+        title: "Área actualizada",
+        description: `El nombre del área ha sido actualizado a "${areaName}"`,
+      });
+    }
   };
 
   const handleSaveDocument = (doc: DocumentType) => {
-    setDocuments(prev => prev.map(d => d.id === doc.id ? doc : d));
-    setEditingDoc(null);
-    // Aquí se implementaría la lógica para guardar el documento en el backend
+    if (areaId) {
+      updateDocument(areaId, doc);
+      setEditingDoc(null);
+      toast({
+        title: "Documento actualizado",
+        description: "El documento ha sido actualizado correctamente",
+      });
+    }
   };
 
   const handleAddDocument = () => {
-    if (!newDoc?.title || !newDoc?.description) return;
+    if (!newDoc?.title || !newDoc?.description || !areaId) return;
     
-    const doc: DocumentType = {
-      id: Date.now().toString(),
+    addDocument(areaId, {
       title: newDoc.title,
       description: newDoc.description,
       type: newDoc.type || 'Documento',
       date: new Date().toLocaleDateString(),
-    };
+    });
     
-    setDocuments(prev => [...prev, doc]);
     setNewDoc(null);
-    // Aquí se implementaría la lógica para guardar el nuevo documento en el backend
+    toast({
+      title: "Documento agregado",
+      description: "El nuevo documento ha sido agregado correctamente",
+    });
   };
 
   const handleDeleteDocument = (id: string) => {
-    setDocuments(prev => prev.filter(doc => doc.id !== id));
-    // Aquí se implementaría la lógica para eliminar el documento en el backend
+    if (areaId) {
+      deleteDocument(areaId, id);
+      toast({
+        title: "Documento eliminado",
+        description: "El documento ha sido eliminado correctamente",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleViewDocument = (doc: DocumentType) => {
+    setViewingDoc(doc);
   };
 
   return (
@@ -62,8 +91,11 @@ const DocumentList: React.FC<DocumentListProps> = ({ documents: initialDocuments
             <MapPin className="h-5 w-5" />
             {isEditMode && !isEditingName ? (
               <h2 className="text-xl font-bold flex items-center gap-2">
-                {areaName}
-                <Button variant="ghost" size="sm" onClick={() => setIsEditingName(true)}>
+                {selectedArea.name}
+                <Button variant="ghost" size="sm" onClick={() => {
+                  setAreaName(selectedArea.name);
+                  setIsEditingName(true);
+                }}>
                   <PenLine className="h-4 w-4" />
                 </Button>
               </h2>
@@ -79,10 +111,10 @@ const DocumentList: React.FC<DocumentListProps> = ({ documents: initialDocuments
                 </Button>
               </div>
             ) : (
-              <h2 className="text-xl font-bold">Documentos de {areaName}</h2>
+              <h2 className="text-xl font-bold">Documentos de {selectedArea.name}</h2>
             )}
           </div>
-          <Badge variant="outline">{documents.length} documentos</Badge>
+          <Badge variant="outline">{selectedArea.documents.length} documentos</Badge>
         </div>
 
         {isEditMode && (
@@ -120,63 +152,76 @@ const DocumentList: React.FC<DocumentListProps> = ({ documents: initialDocuments
         </Card>
       )}
 
-      <div className="document-list space-y-3">
-        {documents.map((doc) => (
-          <Card key={doc.id} className="document-card hover:bg-secondary/50">
-            <CardHeader className="py-3">
-              <div className="flex items-start justify-between">
+      <ScrollArea className="h-[calc(100vh-250px)]">
+        <div className="document-list space-y-3 pr-4">
+          {selectedArea.documents.map((doc) => (
+            <Card key={doc.id} className="document-card hover:bg-secondary/50">
+              <CardHeader className="py-3">
+                <div className="flex items-start justify-between">
+                  {editingDoc === doc.id ? (
+                    <Input 
+                      value={doc.title}
+                      onChange={(e) => handleSaveDocument({ ...doc, title: e.target.value })}
+                      className="flex-grow"
+                    />
+                  ) : (
+                    <CardTitle className="text-base">{doc.title}</CardTitle>
+                  )}
+                  <Badge>{doc.type}</Badge>
+                </div>
+                <CardDescription>{doc.date}</CardDescription>
+              </CardHeader>
+              <CardContent className="py-2">
                 {editingDoc === doc.id ? (
-                  <Input 
-                    value={doc.title}
-                    onChange={(e) => handleSaveDocument({ ...doc, title: e.target.value })}
-                    className="flex-grow"
+                  <Textarea 
+                    value={doc.description}
+                    onChange={(e) => handleSaveDocument({ ...doc, description: e.target.value })}
+                    className="mb-3"
                   />
                 ) : (
-                  <CardTitle className="text-base">{doc.title}</CardTitle>
+                  <p className="text-sm text-muted-foreground mb-3 line-clamp-2">{doc.description}</p>
                 )}
-                <Badge>{doc.type}</Badge>
-              </div>
-              <CardDescription>{doc.date}</CardDescription>
-            </CardHeader>
-            <CardContent className="py-2">
-              {editingDoc === doc.id ? (
-                <Textarea 
-                  value={doc.description}
-                  onChange={(e) => handleSaveDocument({ ...doc, description: e.target.value })}
-                  className="mb-3"
-                />
-              ) : (
-                <p className="text-sm text-muted-foreground mb-3 line-clamp-2">{doc.description}</p>
-              )}
-              <div className="flex justify-end gap-2">
-                {isEditMode ? (
-                  <>
+                <div className="flex justify-end gap-2">
+                  {isEditMode ? (
+                    <>
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        onClick={() => handleDeleteDocument(doc.id)}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        onClick={() => setEditingDoc(editingDoc === doc.id ? null : doc.id)}
+                      >
+                        {editingDoc === doc.id ? <Save className="h-4 w-4" /> : <PenLine className="h-4 w-4" />}
+                      </Button>
+                    </>
+                  ) : (
                     <Button 
                       variant="outline" 
                       size="sm" 
-                      onClick={() => handleDeleteDocument(doc.id)}
+                      className="flex items-center"
+                      onClick={() => handleViewDocument(doc)}
                     >
-                      <Trash2 className="h-4 w-4" />
+                      <FileText className="mr-2 h-4 w-4" />
+                      Ver documento
                     </Button>
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
-                      onClick={() => setEditingDoc(editingDoc === doc.id ? null : doc.id)}
-                    >
-                      {editingDoc === doc.id ? <Save className="h-4 w-4" /> : <PenLine className="h-4 w-4" />}
-                    </Button>
-                  </>
-                ) : (
-                  <Button variant="outline" size="sm" className="flex items-center">
-                    <FileText className="mr-2 h-4 w-4" />
-                    Ver documento
-                  </Button>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </ScrollArea>
+
+      <DocumentViewer 
+        document={viewingDoc} 
+        isOpen={!!viewingDoc} 
+        onClose={() => setViewingDoc(null)} 
+      />
     </div>
   );
 };
