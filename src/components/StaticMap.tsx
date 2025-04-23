@@ -1,4 +1,3 @@
-
 import React from "react";
 import { areaData } from "@/data/areas";
 
@@ -43,7 +42,9 @@ const StaticMap: React.FC<StaticMapProps> = ({ onSelectArea, selectedArea }) => 
           alt="Mapa base"
           width={IMG_WIDTH}
           height={IMG_HEIGHT}
-          className="rounded-lg shadow-md w-full h-full object-cover"
+          className={`rounded-lg shadow-md w-full h-full object-cover transition-all duration-300 ${
+            selectedArea ? 'opacity-40' : 'opacity-100'
+          }`}
           draggable={false}
         />
 
@@ -64,7 +65,8 @@ const StaticMap: React.FC<StaticMapProps> = ({ onSelectArea, selectedArea }) => 
                   ? "drop-shadow(0 0 8px #fff8)"
                   : "drop-shadow(0 1px 6px #222a)",
                 cursor: "pointer",
-                transition: "all 0.2s",
+                transition: "all 0.3s",
+                opacity: selectedArea ? (area.id === selectedArea ? 1 : 0.3) : 1
               }}
               className="hover:opacity-80 pointer-events-auto area-highlight"
               onClick={() => onSelectArea(area.id)}
@@ -72,8 +74,8 @@ const StaticMap: React.FC<StaticMapProps> = ({ onSelectArea, selectedArea }) => 
           ))}
         </svg>
 
-        {/* Nombres de las áreas (posiciones aproximadas) */}
-        {areaData.map((area, idx) => {
+        {/* Nombres de las áreas */}
+        {areaData.map((area) => {
           // Choose a label point roughly in the center of the polygon
           const labelPositions: Record<string, { x: number; y: number }> = {
             "area-1": { x: 150, y: 130 },
@@ -85,7 +87,9 @@ const StaticMap: React.FC<StaticMapProps> = ({ onSelectArea, selectedArea }) => 
           return (
             <div
               key={area.id + "-label"}
-              className={`absolute select-none px-2 py-1 rounded-lg font-bold text-xs shadow-md text-white `}
+              className={`absolute select-none px-2 py-1 rounded-lg font-bold text-xs shadow-md text-white transition-all duration-300 ${
+                selectedArea && area.id !== selectedArea ? 'opacity-30' : 'opacity-100'
+              }`}
               style={{
                 left: x - 36,
                 top: y - 16,
@@ -93,7 +97,6 @@ const StaticMap: React.FC<StaticMapProps> = ({ onSelectArea, selectedArea }) => 
                 border: area.id === selectedArea ? "2px solid #fff" : "1px solid #222c",
                 zIndex: 2,
                 pointerEvents: "none",
-                transition: "all 0.2s",
                 minWidth: 72,
                 textAlign: "center",
               }}
