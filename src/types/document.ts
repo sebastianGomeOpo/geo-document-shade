@@ -5,6 +5,7 @@ export interface DocumentType {
   description: string;
   type: string;
   date: string;
+  imageUrl?: string;
   fileUrl?: string;
 }
 

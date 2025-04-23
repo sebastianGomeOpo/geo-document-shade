@@ -1,14 +1,14 @@
-
 import React, { useState } from 'react';
 import { AreaType, DocumentType } from '@/types/document';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { FileText, MapPin, Plus, PenLine, Save, Trash2 } from 'lucide-react';
+import { FileText, MapPin, Plus, PenLine, Save, Trash2, ImagePlus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useAreaStore } from '@/services/areaService';
 import DocumentViewer from '@/components/DocumentViewer';
+import ImageViewer from '@/components/ImageViewer';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { toast } from '@/hooks/use-toast';
 
@@ -26,6 +26,7 @@ const DocumentList: React.FC<DocumentListProps> = ({ areaId, isEditMode }) => {
   const [editingDoc, setEditingDoc] = useState<string | null>(null);
   const [newDoc, setNewDoc] = useState<Partial<DocumentType> | null>(null);
   const [viewingDoc, setViewingDoc] = useState<DocumentType | null>(null);
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
   if (!selectedArea) return null;
 
@@ -81,6 +82,27 @@ const DocumentList: React.FC<DocumentListProps> = ({ areaId, isEditMode }) => {
 
   const handleViewDocument = (doc: DocumentType) => {
     setViewingDoc(doc);
+  };
+
+  const handleImageUpload = (docId: string, e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const imageUrl = URL.createObjectURL(file);
+    
+    if (areaId) {
+      const updatedDoc = selectedArea.documents.find(d => d.id === docId);
+      if (updatedDoc) {
+        handleSaveDocument({
+          ...updatedDoc,
+          imageUrl
+        });
+        toast({
+          title: "Imagen agregada",
+          description: "La imagen ha sido agregada al documento correctamente",
+        });
+      }
+    }
   };
 
   return (
@@ -173,13 +195,45 @@ const DocumentList: React.FC<DocumentListProps> = ({ areaId, isEditMode }) => {
               </CardHeader>
               <CardContent className="py-2">
                 {editingDoc === doc.id ? (
-                  <Textarea 
-                    value={doc.description}
-                    onChange={(e) => handleSaveDocument({ ...doc, description: e.target.value })}
-                    className="mb-3"
-                  />
+                  <>
+                    <Textarea 
+                      value={doc.description}
+                      onChange={(e) => handleSaveDocument({ ...doc, description: e.target.value })}
+                      className="mb-3"
+                    />
+                    <div className="mb-3">
+                      <Input
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => handleImageUpload(doc.id, e)}
+                        className="hidden"
+                        id={`image-upload-${doc.id}`}
+                      />
+                      <Button
+                        variant="outline"
+                        onClick={() => document.getElementById(`image-upload-${doc.id}`)?.click()}
+                      >
+                        <ImagePlus className="h-4 w-4 mr-2" />
+                        Adjuntar imagen
+                      </Button>
+                    </div>
+                  </>
                 ) : (
-                  <p className="text-sm text-muted-foreground mb-3 line-clamp-2">{doc.description}</p>
+                  <>
+                    <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
+                      {doc.description}
+                    </p>
+                    {doc.imageUrl && (
+                      <div className="mb-3">
+                        <img
+                          src={doc.imageUrl}
+                          alt="Document preview"
+                          className="max-h-32 object-contain cursor-pointer hover:opacity-90 transition-opacity"
+                          onClick={() => setSelectedImage(doc.imageUrl!)}
+                        />
+                      </div>
+                    )}
+                  </>
                 )}
                 <div className="flex justify-end gap-2">
                   {isEditMode ? (
@@ -222,6 +276,14 @@ const DocumentList: React.FC<DocumentListProps> = ({ areaId, isEditMode }) => {
         isOpen={!!viewingDoc} 
         onClose={() => setViewingDoc(null)} 
       />
+
+      {selectedImage && (
+        <ImageViewer
+          imageUrl={selectedImage}
+          isOpen={!!selectedImage}
+          onClose={() => setSelectedImage(null)}
+        />
+      )}
     </div>
   );
 };
