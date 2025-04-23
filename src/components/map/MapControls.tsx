@@ -13,8 +13,9 @@ const MapControls: React.FC<MapControlsProps> = ({ isEditMode, onSave }) => {
 
   return (
     <Button
-      className="absolute top-4 right-4 z-10"
+      className="absolute top-4 right-4 z-10 shadow-md animate-in fade-in duration-300"
       onClick={onSave}
+      variant="secondary"
     >
       <Save className="h-4 w-4 mr-2" />
       Guardar cambios

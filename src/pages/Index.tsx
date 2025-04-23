@@ -15,7 +15,7 @@ const Index = () => {
   const { areas } = useAreaStore();
   const isMobile = useIsMobile();
 
-  const handleSelectArea = (areaId: string) => {
+  const handleSelectArea = (areaId: string | null) => {
     setSelectedArea(areaId);
   };
 
@@ -40,6 +40,7 @@ const Index = () => {
               onSelectArea={handleSelectArea}
               selectedArea={selectedArea}
               isEditMode={isEditMode}
+              toggleEditMode={toggleEditMode}
             />
           </div>
         </div>
