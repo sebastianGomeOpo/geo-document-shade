@@ -3,18 +3,10 @@ import React, { useState } from 'react';
 import { DocumentType } from '@/types/document';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { FileText, MapPin, Plus, PenLine, Save, Trash2, X } from 'lucide-react';
+import { FileText, MapPin, Plus, PenLine, Save, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { 
-  Dialog, 
-  DialogContent, 
-  DialogDescription, 
-  DialogHeader, 
-  DialogTitle 
-} from '@/components/ui/dialog';
-import { useToast } from '@/hooks/use-toast';
 
 interface DocumentListProps {
   documents: DocumentType[];
@@ -23,71 +15,26 @@ interface DocumentListProps {
   areaId?: string | null;
 }
 
-const DocumentList: React.FC<DocumentListProps> = ({ 
-  documents: initialDocuments, 
-  areaName: initialAreaName, 
-  isEditMode, 
-  areaId 
-}) => {
+const DocumentList: React.FC<DocumentListProps> = ({ documents: initialDocuments, areaName: initialAreaName, isEditMode, areaId }) => {
   const [documents, setDocuments] = useState(initialDocuments);
   const [areaName, setAreaName] = useState(initialAreaName);
   const [isEditingName, setIsEditingName] = useState(false);
   const [editingDoc, setEditingDoc] = useState<string | null>(null);
   const [newDoc, setNewDoc] = useState<Partial<DocumentType> | null>(null);
-  const [viewingDoc, setViewingDoc] = useState<DocumentType | null>(null);
-  const { toast } = useToast();
 
-  // Handle area name saving
   const handleSaveAreaName = () => {
-    if (!areaName.trim()) {
-      toast({
-        title: "Error",
-        description: "El nombre del área no puede estar vacío",
-        variant: "destructive"
-      });
-      return;
-    }
-    
     setIsEditingName(false);
-    
-    // Update the name in the global state (areaData)
-    // For now we're just updating local state, but in a real app this would update the backend
-    toast({
-      title: "Cambios guardados",
-      description: `Nombre del área actualizado a "${areaName}"`,
-    });
+    // Aquí se implementaría la lógica para guardar el nombre en el backend
   };
 
-  // Handle document editing/saving
   const handleSaveDocument = (doc: DocumentType) => {
-    if (!doc.title.trim() || !doc.description.trim()) {
-      toast({
-        title: "Error",
-        description: "El título y la descripción son obligatorios",
-        variant: "destructive"
-      });
-      return;
-    }
-    
     setDocuments(prev => prev.map(d => d.id === doc.id ? doc : d));
     setEditingDoc(null);
-    
-    toast({
-      title: "Documento actualizado",
-      description: "El documento se ha actualizado correctamente"
-    });
+    // Aquí se implementaría la lógica para guardar el documento en el backend
   };
 
-  // Handle adding a new document
   const handleAddDocument = () => {
-    if (!newDoc?.title?.trim() || !newDoc?.description?.trim()) {
-      toast({
-        title: "Error",
-        description: "El título y la descripción son obligatorios",
-        variant: "destructive"
-      });
-      return;
-    }
+    if (!newDoc?.title || !newDoc?.description) return;
     
     const doc: DocumentType = {
       id: Date.now().toString(),
@@ -99,26 +46,16 @@ const DocumentList: React.FC<DocumentListProps> = ({
     
     setDocuments(prev => [...prev, doc]);
     setNewDoc(null);
-    
-    toast({
-      title: "Documento añadido",
-      description: "Se ha añadido un nuevo documento correctamente"
-    });
+    // Aquí se implementaría la lógica para guardar el nuevo documento en el backend
   };
 
-  // Handle document deletion
   const handleDeleteDocument = (id: string) => {
     setDocuments(prev => prev.filter(doc => doc.id !== id));
-    
-    toast({
-      title: "Documento eliminado",
-      description: "El documento ha sido eliminado"
-    });
+    // Aquí se implementaría la lógica para eliminar el documento en el backend
   };
 
   return (
     <div className="document-panel-enter p-4">
-      {/* Area header with edit option */}
       <div className="flex flex-col gap-4 mb-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -160,20 +97,19 @@ const DocumentList: React.FC<DocumentListProps> = ({
         )}
       </div>
 
-      {/* New document form */}
       {newDoc && (
         <Card className="mb-4 border-2 border-primary">
           <CardHeader className="py-3">
             <Input 
               placeholder="Título del documento"
-              value={newDoc.title || ''}
+              value={newDoc.title}
               onChange={(e) => setNewDoc(prev => ({ ...prev!, title: e.target.value }))}
             />
           </CardHeader>
           <CardContent className="py-2 space-y-4">
             <Textarea 
               placeholder="Descripción del documento"
-              value={newDoc.description || ''}
+              value={newDoc.description}
               onChange={(e) => setNewDoc(prev => ({ ...prev!, description: e.target.value }))}
             />
             <div className="flex justify-end gap-2">
@@ -184,7 +120,6 @@ const DocumentList: React.FC<DocumentListProps> = ({
         </Card>
       )}
 
-      {/* Document list */}
       <div className="document-list space-y-3">
         {documents.map((doc) => (
           <Card key={doc.id} className="document-card hover:bg-secondary/50">
@@ -193,12 +128,7 @@ const DocumentList: React.FC<DocumentListProps> = ({
                 {editingDoc === doc.id ? (
                   <Input 
                     value={doc.title}
-                    onChange={(e) => {
-                      const updatedDoc = { ...doc, title: e.target.value };
-                      setDocuments(prev => 
-                        prev.map(d => d.id === doc.id ? updatedDoc : d)
-                      );
-                    }}
+                    onChange={(e) => handleSaveDocument({ ...doc, title: e.target.value })}
                     className="flex-grow"
                   />
                 ) : (
@@ -212,12 +142,7 @@ const DocumentList: React.FC<DocumentListProps> = ({
               {editingDoc === doc.id ? (
                 <Textarea 
                   value={doc.description}
-                  onChange={(e) => {
-                    const updatedDoc = { ...doc, description: e.target.value };
-                    setDocuments(prev => 
-                      prev.map(d => d.id === doc.id ? updatedDoc : d)
-                    );
-                  }}
+                  onChange={(e) => handleSaveDocument({ ...doc, description: e.target.value })}
                   className="mb-3"
                 />
               ) : (
@@ -236,24 +161,13 @@ const DocumentList: React.FC<DocumentListProps> = ({
                     <Button 
                       variant="outline" 
                       size="sm" 
-                      onClick={() => {
-                        if (editingDoc === doc.id) {
-                          handleSaveDocument(doc);
-                        } else {
-                          setEditingDoc(doc.id);
-                        }
-                      }}
+                      onClick={() => setEditingDoc(editingDoc === doc.id ? null : doc.id)}
                     >
                       {editingDoc === doc.id ? <Save className="h-4 w-4" /> : <PenLine className="h-4 w-4" />}
                     </Button>
                   </>
                 ) : (
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    className="flex items-center"
-                    onClick={() => setViewingDoc(doc)}
-                  >
+                  <Button variant="outline" size="sm" className="flex items-center">
                     <FileText className="mr-2 h-4 w-4" />
                     Ver documento
                   </Button>
@@ -263,34 +177,6 @@ const DocumentList: React.FC<DocumentListProps> = ({
           </Card>
         ))}
       </div>
-
-      {/* Document viewing dialog */}
-      <Dialog open={viewingDoc !== null} onOpenChange={() => setViewingDoc(null)}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle className="flex items-center justify-between">
-              {viewingDoc?.title}
-              <Badge className="ml-2">{viewingDoc?.type}</Badge>
-            </DialogTitle>
-            <DialogDescription>
-              {viewingDoc?.date}
-            </DialogDescription>
-          </DialogHeader>
-          <div className="p-4 bg-muted/50 rounded-md max-h-[60vh] overflow-y-auto">
-            {viewingDoc?.description}
-          </div>
-          <div className="flex justify-end">
-            <Button 
-              variant="outline" 
-              onClick={() => setViewingDoc(null)}
-              className="gap-2"
-            >
-              <X className="h-4 w-4" />
-              Cerrar
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 };

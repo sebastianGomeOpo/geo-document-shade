@@ -1,11 +1,10 @@
-
 import React, { useState, useRef } from 'react';
+import StaticMap from '@/components/StaticMap';
 import DocumentList from '@/components/DocumentList';
 import { areaData } from '@/data/areas';
 import { Button } from '@/components/ui/button';
 import { PenLine } from 'lucide-react';
 import { useEditMode } from '@/hooks/useEditMode';
-import AreaSelector from '@/components/AreaSelector';
 
 const Index = () => {
   const [selectedArea, setSelectedArea] = useState<string | null>(null);
@@ -38,19 +37,14 @@ const Index = () => {
         </Button>
       </div>
 
-      <div className="flex flex-col flex-grow">
-        <div className="container mx-auto py-6">
-          <AreaSelector 
-            areas={areaData}
-            selectedArea={selectedArea}
-            onSelectArea={handleSelectArea}
-            isEditMode={isEditMode}
-          />
+      <div className="flex flex-col lg:flex-row flex-grow">
+        <div className={`h-[70vh] lg:h-auto transition-all duration-300 ${selectedAreaData ? 'lg:w-2/3' : 'w-full'}`}>
+          <StaticMap onSelectArea={handleSelectArea} selectedArea={selectedArea} isEditMode={isEditMode} />
         </div>
-        
-        <div ref={documentsRef} className="container mx-auto">
+
+        <div ref={documentsRef} className="w-full lg:w-1/3">
           {selectedAreaData && (
-            <div className="border-t border-muted h-full overflow-y-auto animate-fade-in">
+            <div className="lg:border-l h-full overflow-y-auto animate-fade-in">
               <DocumentList 
                 documents={selectedAreaData.documents} 
                 areaName={selectedAreaData.name}
@@ -63,7 +57,7 @@ const Index = () => {
       </div>
 
       <footer className="bg-background border-t py-2 px-4 text-center text-sm text-muted-foreground">
-        <p>© 2025 DocuMapa - {isEditMode ? "Modo edición activado" : "Seleccione un área para ver documentos asociados"}</p>
+        <p>© 2025 DocuMapa - {isEditMode ? "Modo edición activado" : "Haga clic en las áreas del mapa para ver documentos asociados"}</p>
       </footer>
     </div>
   );
