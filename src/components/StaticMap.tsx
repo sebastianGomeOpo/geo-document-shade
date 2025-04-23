@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from "react";
+
+import React from "react";
 import { areaData } from "@/data/areas";
 import { Button } from "./ui/button";
 import { Save } from "lucide-react";
@@ -28,8 +29,8 @@ const areaColors: Record<string, string> = {
 };
 
 const StaticMap: React.FC<StaticMapProps> = ({ onSelectArea, selectedArea, isEditMode }) => {
-  const [editablePolygons, setEditablePolygons] = useState(areaPolygons);
-  const [dragPoint, setDragPoint] = useState<{ areaId: string; pointIndex: number } | null>(null);
+  const [editablePolygons, setEditablePolygons] = React.useState(areaPolygons);
+  const [dragPoint, setDragPoint] = React.useState<{ areaId: string; pointIndex: number } | null>(null);
 
   const handlePolygonPointDrag = (e: React.MouseEvent, areaId: string, pointIndex: number) => {
     if (!isEditMode) return;
@@ -57,7 +58,7 @@ const StaticMap: React.FC<StaticMapProps> = ({ onSelectArea, selectedArea, isEdi
     console.log('Polígonos guardados:', editablePolygons);
   };
 
-  useEffect(() => {
+  React.useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
       if (!dragPoint) return;
 

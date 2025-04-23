@@ -1,9 +1,16 @@
 
 import React from 'react';
 import { DocumentType } from '@/types/document';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter
+} from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { format } from 'date-fns';
 import { FileText } from 'lucide-react';
 
 interface DocumentViewerProps {
@@ -15,54 +22,37 @@ interface DocumentViewerProps {
 const DocumentViewer: React.FC<DocumentViewerProps> = ({ document, isOpen, onClose }) => {
   if (!document) return null;
   
-  // Intentar parsear la fecha en formato DD/MM/YYYY
-  const formattedDate = (() => {
-    try {
-      const parts = document.date.split('/');
-      if (parts.length === 3) {
-        const date = new Date(
-          parseInt(parts[2]), // año
-          parseInt(parts[1]) - 1, // mes (0-indexed)
-          parseInt(parts[0]) // día
-        );
-        return format(date, 'PPP');
-      }
-      return document.date;
-    } catch (error) {
-      return document.date;
-    }
-  })();
-
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl">
+      <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <div className="flex items-center justify-between">
-            <DialogTitle className="text-xl">{document.title}</DialogTitle>
+          <div className="flex items-start justify-between">
+            <DialogTitle>{document.title}</DialogTitle>
             <Badge>{document.type}</Badge>
           </div>
-          <DialogDescription className="text-sm text-muted-foreground">
-            Fecha: {formattedDate}
+          <DialogDescription>
+            Fecha: {document.date}
           </DialogDescription>
         </DialogHeader>
-        
-        <div className="mt-4 p-4 bg-secondary/20 rounded-md">
-          <p className="whitespace-pre-wrap">{document.description}</p>
+
+        <div className="p-4 border rounded-md bg-muted/30">
+          {document.fileUrl ? (
+            <iframe 
+              src={document.fileUrl} 
+              className="w-full min-h-[300px]" 
+              title={document.title}
+            />
+          ) : (
+            <div className="flex flex-col items-center justify-center py-8 text-muted-foreground">
+              <FileText className="h-12 w-12 mb-2" />
+              <p className="text-center">{document.description}</p>
+            </div>
+          )}
         </div>
-        
-        {document.fileUrl && (
-          <div className="mt-4 flex items-center gap-2">
-            <FileText className="h-5 w-5 text-primary" />
-            <a 
-              href={document.fileUrl} 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="text-primary hover:underline"
-            >
-              Ver documento original
-            </a>
-          </div>
-        )}
+
+        <DialogFooter>
+          <Button onClick={onClose}>Cerrar</Button>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );
