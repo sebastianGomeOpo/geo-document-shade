@@ -1,7 +1,6 @@
-
 import React, { useRef } from "react";
 import { areaData } from "@/data/areas";
-import { IMG_WIDTH, IMG_HEIGHT, areaPolygons, areaColors } from "@/utils/mapConstants";
+import { IMG_WIDTH, IMG_HEIGHT, areaPolygons, areaColors, labelPositions } from "@/utils/mapConstants";
 import MapControls from "./map/MapControls";
 import MapLegend from "./map/MapLegend";
 import AreaLabels from "./map/AreaLabels";
@@ -20,6 +19,7 @@ const StaticMap: React.FC<StaticMapProps> = ({
   toggleEditMode 
 }) => {
   const [editablePolygons, setEditablePolygons] = React.useState(areaPolygons);
+  const [editableLabelPositions, setEditableLabelPositions] = React.useState(labelPositions);
   const [dragPoint, setDragPoint] = React.useState<{ areaId: string; pointIndex: number } | null>(null);
   const svgRef = useRef<SVGSVGElement>(null);
 
@@ -36,7 +36,6 @@ const StaticMap: React.FC<StaticMapProps> = ({
     const svgElement = svgRef.current;
     const rect = svgElement.getBoundingClientRect();
     
-    // Calculate coordinates relative to SVG viewBox
     const x = Math.round(((e.clientX - rect.left) / rect.width) * IMG_WIDTH);
     const y = Math.round(((e.clientY - rect.top) / rect.height) * IMG_HEIGHT);
 
@@ -55,8 +54,16 @@ const StaticMap: React.FC<StaticMapProps> = ({
     setDragPoint(null);
   };
 
+  const handleLabelPositionChange = (areaId: string, x: number, y: number) => {
+    setEditableLabelPositions(prev => ({
+      ...prev,
+      [areaId]: { x, y }
+    }));
+  };
+
   const handleSavePolygons = () => {
     console.log('Polígonos guardados:', editablePolygons);
+    console.log('Posiciones de etiquetas guardadas:', editableLabelPositions);
     if (toggleEditMode) {
       toggleEditMode();
     }
@@ -163,7 +170,11 @@ const StaticMap: React.FC<StaticMapProps> = ({
           ))}
         </svg>
 
-        <AreaLabels selectedArea={selectedArea} />
+        <AreaLabels 
+          selectedArea={selectedArea} 
+          isEditMode={isEditMode}
+          onLabelPositionChange={handleLabelPositionChange}
+        />
         <MapControls isEditMode={isEditMode} onSave={handleSavePolygons} />
         <MapLegend isEditMode={isEditMode} />
       </div>
