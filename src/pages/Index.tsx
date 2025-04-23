@@ -1,7 +1,6 @@
 
 import React, { useState } from 'react';
 import DocumentList from '@/components/DocumentList';
-import StaticMap from '@/components/StaticMap';
 import { Button } from '@/components/ui/button';
 import { PenLine } from 'lucide-react';
 import { useEditMode } from '@/hooks/useEditMode';
@@ -32,31 +31,25 @@ const Index = () => {
       </div>
 
       <div className="flex flex-col lg:flex-row flex-grow">
-        <div className="lg:w-1/2 p-4">
-          <StaticMap
-            onSelectArea={handleSelectArea}
-            selectedArea={selectedArea}
-            isEditMode={isEditMode}
-          />
-        </div>
-
-        <div className="lg:w-1/2 border-l">
+        <div className="lg:w-1/4 lg:border-r">
           <AreaSelector 
             areas={areas} 
             selectedArea={selectedArea} 
             onSelectArea={handleSelectArea} 
           />
-          
+        </div>
+
+        <div className="lg:w-3/4">
           {selectedArea ? (
             <DocumentList 
               areaId={selectedArea}
               isEditMode={isEditMode}
             />
           ) : (
-            <div className="flex items-center justify-center h-64 p-8 text-center text-muted-foreground">
+            <div className="flex items-center justify-center h-full p-8 text-center text-muted-foreground">
               <div>
                 <h2 className="text-xl font-semibold mb-2">Seleccione un área</h2>
-                <p>Haga clic en un área del mapa o use el selector para ver los documentos asociados</p>
+                <p>Utilice el selector de la izquierda para ver los documentos asociados a un área</p>
               </div>
             </div>
           )}
