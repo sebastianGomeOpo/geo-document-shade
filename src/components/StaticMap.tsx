@@ -1,3 +1,4 @@
+
 import React, { useRef } from "react";
 import { areaData } from "@/data/areas";
 import { IMG_WIDTH, IMG_HEIGHT, areaPolygons, areaColors } from "@/utils/mapConstants";
@@ -162,7 +163,7 @@ const StaticMap: React.FC<StaticMapProps> = ({
           ))}
         </svg>
 
-        <AreaLabels selectedArea={selectedArea} isEditMode={isEditMode} />
+        <AreaLabels selectedArea={selectedArea} />
         <MapControls isEditMode={isEditMode} onSave={handleSavePolygons} />
         <MapLegend isEditMode={isEditMode} />
       </div>
