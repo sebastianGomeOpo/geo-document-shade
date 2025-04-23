@@ -28,7 +28,15 @@ export const areaData: AreaType[] = [
         type: "Certificado",
         date: "05/02/2023"
       },
-    ]
+    ],
+    geometry: {
+      type: "Feature",
+      geometry: {
+        type: "Polygon",
+        coordinates: [[[-73.45, -13.75], [-73.4, -13.75], [-73.4, -13.7], [-73.45, -13.7], [-73.45, -13.75]]]
+      }
+    },
+    center: [-73.425, -13.725]
   },
   {
     id: "area-2",
@@ -49,7 +57,15 @@ export const areaData: AreaType[] = [
         type: "Protocolo",
         date: "18/02/2023"
       }
-    ]
+    ],
+    geometry: {
+      type: "Feature",
+      geometry: {
+        type: "Polygon",
+        coordinates: [[[-73.55, -13.85], [-73.5, -13.85], [-73.5, -13.8], [-73.55, -13.8], [-73.55, -13.85]]]
+      }
+    },
+    center: [-73.525, -13.825]
   },
   {
     id: "area-3",
@@ -77,7 +93,15 @@ export const areaData: AreaType[] = [
         type: "Informe",
         date: "15/05/2022"
       }
-    ]
+    ],
+    geometry: {
+      type: "Feature",
+      geometry: {
+        type: "Polygon",
+        coordinates: [[[-73.65, -13.95], [-73.6, -13.95], [-73.6, -13.9], [-73.65, -13.9], [-73.65, -13.95]]]
+      }
+    },
+    center: [-73.625, -13.925]
   },
   {
     id: "area-4",
@@ -98,6 +122,14 @@ export const areaData: AreaType[] = [
         type: "Plan",
         date: "20/11/2022"
       }
-    ]
+    ],
+    geometry: {
+      type: "Feature",
+      geometry: {
+        type: "Polygon",
+        coordinates: [[[-73.75, -14.05], [-73.7, -14.05], [-73.7, -14], [-73.75, -14], [-73.75, -14.05]]]
+      }
+    },
+    center: [-73.725, -14.025]
   }
 ];

@@ -13,4 +13,6 @@ export interface AreaType {
   name: string;
   color: string;
   documents: DocumentType[];
+  geometry: any; // GeoJSON geometry
+  center: [number, number]; // [longitude, latitude]
 }
