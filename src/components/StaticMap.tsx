@@ -81,7 +81,7 @@ const StaticMap: React.FC<StaticMapProps> = ({
   const handlePolygonClick = (e: React.MouseEvent, areaId: string) => {
     e.stopPropagation();
     if (!isEditMode) {
-      onSelectArea(areaId);
+      onSelectArea(areaId === selectedArea ? null : areaId);
     }
   };
 

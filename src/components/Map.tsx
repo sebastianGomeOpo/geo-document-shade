@@ -1,7 +1,6 @@
-
-import React, { useEffect, useState, useRef } from 'react';
-import mapboxgl from 'mapbox-gl';
+import React, { useEffect, useRef, useState } from 'react';
 import { areaData } from '@/data/areas';
+import mapboxgl from 'mapbox-gl@latest';
 
 // Necesitarás agregar tu token de Mapbox aquí
 // Para propósitos de desarrollo, usamos un token temporal
@@ -9,7 +8,7 @@ const MAPBOX_TOKEN = 'pk.eyJ1IjoibG92YWJsZSIsImEiOiJjbHY4NDU5MTMwcHpsMmpvN3l3OXY
 mapboxgl.accessToken = MAPBOX_TOKEN;
 
 interface MapProps {
-  onSelectArea: (areaId: string) => void;
+  onSelectArea: (areaId: string | null) => void;
   selectedArea: string | null;
 }
 
@@ -19,7 +18,6 @@ const Map: React.FC<MapProps> = ({ onSelectArea, selectedArea }) => {
   const tooltipRef = useRef<HTMLDivElement>(null);
   const [mapLoaded, setMapLoaded] = useState(false);
 
-  // Inicializar el mapa
   useEffect(() => {
     if (!mapContainer.current) return;
 
@@ -36,22 +34,18 @@ const Map: React.FC<MapProps> = ({ onSelectArea, selectedArea }) => {
     mapInstance.on('load', () => {
       setMapLoaded(true);
 
-      // Crear un tooltip
       const tooltip = document.createElement('div');
       tooltip.className = 'area-tooltip';
       tooltip.style.display = 'none';
       tooltipRef.current = tooltip;
       mapContainer.current?.appendChild(tooltip);
 
-      // Añadir las áreas al mapa
       areaData.forEach(area => {
-        // Añadir el polígono del área
         mapInstance.addSource(`area-${area.id}`, {
           type: 'geojson',
           data: area.geometry
         });
 
-        // Añadir capa de relleno
         mapInstance.addLayer({
           id: `area-fill-${area.id}`,
           type: 'fill',
@@ -63,7 +57,6 @@ const Map: React.FC<MapProps> = ({ onSelectArea, selectedArea }) => {
           }
         });
 
-        // Añadir capa de contorno
         mapInstance.addLayer({
           id: `area-line-${area.id}`,
           type: 'line',
@@ -76,7 +69,6 @@ const Map: React.FC<MapProps> = ({ onSelectArea, selectedArea }) => {
           }
         });
 
-        // Añadir eventos de hover para las áreas
         mapInstance.on('mouseenter', `area-fill-${area.id}`, () => {
           mapInstance.getCanvas().style.cursor = 'pointer';
           if (tooltipRef.current) {
@@ -101,10 +93,9 @@ const Map: React.FC<MapProps> = ({ onSelectArea, selectedArea }) => {
         });
 
         mapInstance.on('click', `area-fill-${area.id}`, () => {
-          onSelectArea(area.id);
+          onSelectArea(area.id === selectedArea ? null : area.id);
         });
 
-        // Añadir marcador para el área
         const markerElement = document.createElement('div');
         markerElement.className = 'area-marker';
         markerElement.id = `marker-${area.id}`;
@@ -123,7 +114,6 @@ const Map: React.FC<MapProps> = ({ onSelectArea, selectedArea }) => {
     };
   }, []);
 
-  // Actualizar el estilo del área seleccionada
   useEffect(() => {
     if (!mapLoaded || !map.current) return;
 
