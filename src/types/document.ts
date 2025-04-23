@@ -13,6 +13,7 @@ export interface AreaType {
   name: string;
   color: string;
   documents: DocumentType[];
+  center?: [number, number]; // Adding the center property as an optional property
   geometry?: GeoJSONPolygon;
 }
 
