@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import Map from '@/components/Map';
+import StaticMap from '@/components/StaticMap';
 import DocumentList from '@/components/DocumentList';
 import { areaData } from '@/data/areas';
 
@@ -20,8 +20,8 @@ const Index = () => {
       </div>
 
       <div className="flex flex-grow overflow-hidden">
-        <div className={`flex-grow transition-all duration-300 ${selectedAreaData ? 'lg:w-2/3' : 'w-full'}`}>
-          <Map onSelectArea={handleSelectArea} selectedArea={selectedArea} />
+        <div className={`flex-grow transition-all duration-300 ${selectedAreaData ? 'lg:w-2/3' : 'w-full'} flex items-center justify-center`}>
+          <StaticMap onSelectArea={handleSelectArea} selectedArea={selectedArea} />
         </div>
 
         {selectedAreaData && (
